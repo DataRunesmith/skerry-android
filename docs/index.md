@@ -7,4 +7,4 @@ template: home.html
 Skerry is an SSH and host-management app for Android, written in Kotlin.
 
 - [Get started](getting-started.md): requirements, building and running the tests.
-- The source is on [GitHub](https://github.com/DataRunesmith/skerry-android).
+- The source is on [GitHub]({{ config.repo_url }}).

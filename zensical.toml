@@ -4,7 +4,8 @@
 [project]
 site_name = "Skerry for Android"
 site_description = "An SSH and host-management app for Android, written in Kotlin."
-repo_url = "https://github.com/DataRunesmith/skerry-android"
+# The Docs workflow fills {repository} from github.repository before building.
+repo_url = "https://github.com/{repository}"
 nav = [
   { "Home" = "index.md" },
   { "Get started" = "getting-started.md" },
