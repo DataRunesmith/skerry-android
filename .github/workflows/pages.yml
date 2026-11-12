@@ -24,26 +24,10 @@ jobs:
         with:
           python-version: "3.14"
       - run: pip install --no-deps -r requirements-docs.txt
-      - name: Set repository URL
+      - name: Build documentation
         env:
           REPOSITORY: ${{ github.repository }}
-        run: |
-          python - <<'PY'
-          import os
-          import tomllib
-          from pathlib import Path
-          from jinja2 import StrictUndefined, Template
-
-          config = Path("zensical.toml")
-          config.write_text(
-              config.read_text().replace("{repository}", os.environ["REPOSITORY"])
-          )
-          index = Path("docs/index.md")
-          index.write_text(Template(index.read_text(), undefined=StrictUndefined).render(
-              config=tomllib.loads(config.read_text())["project"]
-          ) + "\n")
-          PY
-      - run: zensical build --clean --strict
+        run: python scripts/docs.py build --clean --strict
       - uses: actions/upload-pages-artifact@v5.0.0
         if: github.event_name != 'pull_request' && github.ref == 'refs/heads/main'
         with:

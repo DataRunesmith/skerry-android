@@ -1,10 +1,10 @@
-# The documentation site: `zensical build` renders docs/ into site/, which
+# The documentation site: `python scripts/docs.py build` renders docs/ into site/, which
 # .github/workflows/pages.yml publishes. No site_url is set, so the build does
 # not depend on the address it is served from.
 [project]
 site_name = "Skerry for Android"
 site_description = "An SSH and host-management app for Android, written in Kotlin."
-# The Docs workflow fills {repository} from github.repository before building.
+# scripts/docs.py fills {repository} from the build environment or Git origin.
 repo_url = "https://github.com/{repository}"
 nav = [
   { "Home" = "index.md" },
