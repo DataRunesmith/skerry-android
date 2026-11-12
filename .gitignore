@@ -315,3 +315,6 @@ local.properties
 captures/
 !gradle-wrapper.jar
 !**/gradle/wrapper/gradle-wrapper.jar
+
+# Local Claude Code statusline script, kept outside the repository
+statusline.sh
