@@ -56,3 +56,9 @@ class DocsTest(unittest.TestCase):
                     prog_name="zensical",
                     standalone_mode=False,
                 )
+
+    def test_invalid_repository_rejected(self):
+        for value in ("owner", "a/b/c", "/repo", "owner/", "own er/repo", "owner/re;po", "-" * 5000 + "/"):
+            with self.subTest(value=value[:20]), patch.dict(os.environ, {"REPOSITORY": value}, clear=True):
+                with self.assertRaises(ValueError):
+                    docs.repository_slug()

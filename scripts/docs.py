@@ -8,12 +8,11 @@ import argparse
 from contextlib import contextmanager
 import os
 from pathlib import Path
-import re
 import subprocess
 import sys
 
 ROOT = Path(__file__).resolve().parents[1]
-SLUG = re.compile(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+")
+SLUG_CHARS = frozenset("ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789_.-")
 RENDERED_CONFIG = ".zensical-build.toml"
 ORIGIN_PREFIXES = ("https://github.com/", "git@github.com:", "ssh://git@github.com/")
 
@@ -30,7 +29,8 @@ def repository_slug():
                 break
         else:
             raise ValueError("Set REPOSITORY=owner/repo when origin is not a GitHub URL")
-    if not SLUG.fullmatch(repository):
+    parts = repository.split("/")
+    if len(parts) != 2 or not all(part and SLUG_CHARS.issuperset(part) for part in parts):
         raise ValueError("REPOSITORY must have the form owner/repo")
     return repository
 
