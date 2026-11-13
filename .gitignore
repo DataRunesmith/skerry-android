@@ -315,3 +315,9 @@ local.properties
 captures/
 !gradle-wrapper.jar
 !**/gradle/wrapper/gradle-wrapper.jar
+
+# Built documentation site
+site/
+.venv-docs/
+.zensical-build.toml
+__pycache__/
