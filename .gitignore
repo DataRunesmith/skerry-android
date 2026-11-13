@@ -319,3 +319,4 @@ captures/
 # Built documentation site
 site/
 .venv-docs/
+.zensical-build.toml

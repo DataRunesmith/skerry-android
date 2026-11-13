@@ -26,25 +26,23 @@ class DocsTest(unittest.TestCase):
                 with self.assertRaises(ValueError):
                     docs.repository_slug()
 
-    def test_render_and_restore_on_failure(self):
+    def test_config_rendered_separately_and_removed(self):
         with tempfile.TemporaryDirectory() as directory, patch.object(docs, "ROOT", Path(directory)):
-            root = Path(directory)
-            (root / "docs").mkdir()
-            config = root / "zensical.toml"
-            index = root / "docs/index.md"
+            config = Path(directory) / "zensical.toml"
             config.write_text('[project]\nrepo_url = "https://github.com/{repository}"\n')
-            index.write_text('[GitHub]({{ config.repo_url }})\n')
-            originals = (config.read_bytes(), index.read_bytes())
+            original = config.read_bytes()
             with self.assertRaises(RuntimeError):
-                with docs.prepared_sources("fork/project"):
-                    self.assertIn("https://github.com/fork/project", config.read_text())
-                    self.assertEqual(index.read_text(), '[GitHub](https://github.com/fork/project)\n')
+                with docs.prepared_config("fork/project") as rendered:
+                    self.assertNotEqual(rendered, config)
+                    self.assertIn("https://github.com/fork/project", rendered.read_text())
+                    self.assertEqual(config.read_bytes(), original)
                     raise RuntimeError("build failed")
-            self.assertEqual((config.read_bytes(), index.read_bytes()), originals)
+            self.assertFalse(rendered.exists())
+            self.assertEqual(config.read_bytes(), original)
 
     def test_build_and_preview_share_preprocessing(self):
         for command in ("build", "serve"):
-            with patch.object(docs.sys, "argv", ["docs.py", command, "--strict"]), patch.object(docs, "repository_slug", return_value="fork/project"), patch.object(docs, "prepared_sources") as prepare, patch.object(docs.subprocess, "call", return_value=0) as run:
+            with patch.object(docs.sys, "argv", ["docs.py", command, "--strict"]), patch.object(docs, "repository_slug", return_value="fork/project"), patch.object(docs, "prepared_config") as prepare, patch.object(docs.subprocess, "call", return_value=0) as run:
                 self.assertEqual(docs.main(), 0)
                 prepare.assert_called_once_with("fork/project")
-                run.assert_called_once_with([docs.sys.executable, "-m", "zensical", command, "--strict"], cwd=docs.ROOT)
+                run.assert_called_once_with([docs.sys.executable, "-m", "zensical", command, "-f", str(prepare.return_value.__enter__.return_value), "--strict"], cwd=docs.ROOT)
