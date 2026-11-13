@@ -1,8 +1,11 @@
 import importlib.util
 import os
 from pathlib import Path
+import sys
 import tempfile
+import types
 import unittest
+import unittest.mock
 from unittest.mock import patch
 
 SPEC = importlib.util.spec_from_file_location(
@@ -41,8 +44,15 @@ class DocsTest(unittest.TestCase):
             self.assertEqual(config.read_bytes(), original)
 
     def test_build_and_preview_share_preprocessing(self):
+        zensical = types.ModuleType("zensical.main")
+        zensical.cli = unittest.mock.Mock()
+        zensical.cli.main.return_value = None
         for command in ("build", "serve"):
-            with patch.object(docs.sys, "argv", ["docs.py", command, "--strict"]), patch.object(docs, "repository_slug", return_value="fork/project"), patch.object(docs, "prepared_config") as prepare, patch.object(docs.subprocess, "call", return_value=0) as run:
+            with patch.dict(sys.modules, {"zensical": types.ModuleType("zensical"), "zensical.main": zensical}), patch.object(docs.sys, "argv", ["docs.py", command, "--strict"]), patch.object(docs, "repository_slug", return_value="fork/project"), patch.object(docs, "prepared_config") as prepare, patch.object(docs.os, "chdir"):
                 self.assertEqual(docs.main(), 0)
                 prepare.assert_called_once_with("fork/project")
-                run.assert_called_once_with([docs.sys.executable, "-m", "zensical", command, "-f", str(prepare.return_value.__enter__.return_value), "--strict"], cwd=docs.ROOT)
+                zensical.cli.main.assert_called_with(
+                    args=[command, "-f", str(prepare.return_value.__enter__.return_value), "--strict"],
+                    prog_name="zensical",
+                    standalone_mode=False,
+                )

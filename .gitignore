@@ -320,3 +320,4 @@ captures/
 site/
 .venv-docs/
 .zensical-build.toml
+__pycache__/

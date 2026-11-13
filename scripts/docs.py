@@ -55,11 +55,17 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("command", choices=("build", "serve"))
     args, extra = parser.parse_known_args()
+    # Imported here so the helpers stay importable without the build tools installed.
+    from zensical.main import cli
+
+    os.chdir(ROOT)
     with prepared_config(repository_slug()) as config:
-        return subprocess.call(
-            [sys.executable, "-m", "zensical", args.command, "-f", str(config), *extra],
-            cwd=ROOT,
-        )
+        # Run in-process: no subprocess, so no command line is ever assembled.
+        return cli.main(
+            args=[args.command, "-f", str(config), *extra],
+            prog_name="zensical",
+            standalone_mode=False,
+        ) or 0
 
 
 if __name__ == "__main__":
